@@ -31,10 +31,10 @@ internal fun install(context: Context, file: File, exit: Boolean) {
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
     context.startActivity(intent)
-
-    if (exit) {
-        exitProcess(0)
-    }
+// NKY changed: 这里不用退出当前进程，安装的时候会自动给当前进程干掉
+//    if (exit) {
+//        exitProcess(0)
+//    }
 }
 
 internal fun md5(file: File): String {
