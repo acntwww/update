@@ -1,5 +1,6 @@
 package me.reezy.cosmo.update
 
+import android.util.Log
 import androidx.annotation.WorkerThread
 import java.io.BufferedInputStream
 import java.io.FileNotFoundException
@@ -35,11 +36,12 @@ object HttpUtil {
                 connection.outputStream.write(postData)
             }
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                UpdateManager.log("HTTP ${connection.responseCode} ${connection.responseMessage}")
                 throw UpdateResult(UpdateResult.CHECK_HTTP_STATUS, connection.responseCode.toString())
             }
             return String(connection.inputStream.readBytes())
         } catch (ex: IOException) {
-            ex.printStackTrace()
+            UpdateManager.log("HTTP ${Log.getStackTraceString(ex)}")
             throw UpdateResult(UpdateResult.CHECK_NETWORK_IO)
         } finally {
             connection?.disconnect()
@@ -75,10 +77,10 @@ object HttpUtil {
                 throw UpdateResult(UpdateResult.DOWNLOAD_INCOMPLETE)
             }
         } catch (e: FileNotFoundException) {
-            e.printStackTrace()
+            UpdateManager.log("HTTP ${Log.getStackTraceString(e)}")
             throw UpdateResult(UpdateResult.DOWNLOAD_DISK_IO)
         } catch (e: IOException) {
-            e.printStackTrace()
+            UpdateManager.log("HTTP ${Log.getStackTraceString(e)}")
             throw UpdateResult(UpdateResult.DOWNLOAD_NETWORK_IO)
         } finally {
             connection?.disconnect()

@@ -45,6 +45,7 @@ internal class UpdateExecutor(
                 else -> prompt(info, task)
             }
         } catch (ex: UpdateResult) {
+            UpdateManager.log("UpdateExecutor execute => $ex")
             returnResult(ex)
         }
     }
@@ -64,16 +65,21 @@ internal class UpdateExecutor(
     // 更新：如果已经下载，就直接安装，否则下载完成后再安装
     private suspend fun update(info: UpdateInfo, task: DownloadTask) {
         val destFile = File(cacheDir, "${info.hash}.apk")
+        UpdateManager.log("UpdateExecutor update destFile => $destFile")
         if (verify(destFile, info.hash)) {
+            UpdateManager.log("UpdateExecutor update verify => true(install now)")
             install(context, destFile, true)
         } else {
+            UpdateManager.log("UpdateExecutor update verify => false(download now)")
             withContext(Dispatchers.IO) {
                 download(task)
             }
             if (verify(task.file, info.hash)) {
+                UpdateManager.log("UpdateExecutor update verify => true(install later)")
                 task.file.renameTo(destFile)
                 install(context, destFile, true)
             } else {
+                UpdateManager.log("UpdateExecutor update verify => false(install verify)")
                 throw UpdateResult(UpdateResult.INSTALL_VERIFY)
             }
         }
@@ -81,6 +87,7 @@ internal class UpdateExecutor(
 
     // 用户确认更新
     private fun onUserUpdate(info: UpdateInfo, task: DownloadTask) = scope.launch {
+        UpdateManager.log("UpdateExecutor onUserUpdate => $info")
         try {
             update(info, task)
         } catch (ex: UpdateResult) {
@@ -91,7 +98,7 @@ internal class UpdateExecutor(
 
     private fun verify(file: File, hash: String) = when {
         !file.exists() -> false
-        verifier.invoke(file, hash) -> true
+        verifier(file, hash) -> true
         else -> {
             file.delete()
             false

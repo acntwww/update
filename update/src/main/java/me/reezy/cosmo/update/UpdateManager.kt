@@ -11,8 +11,12 @@ object UpdateManager {
     private var downloadListenerFactory: (() -> DownloadListener)? = null
     private var checker: suspend () -> UpdateInfo = { UpdateInfo() }
     private var downloader: (suspend (DownloadTask) -> Unit) = { HttpUtil.download(it) }
-    private var verifier: (File, String) -> Boolean = { file, hash -> md5(file) == hash }
-    private var log: (String) -> Unit = { message -> Log.i("OoO.update", message) }
+    private var verifier: (File, String) -> Boolean = { file, hash ->
+       val actuallyHash =  md5(file)
+        log("verifier actuallyHash => $actuallyHash, hash => $hash file => $file")
+        md5(file) == hash
+    }
+    var log: (String) -> Unit = { message -> Log.i("OoO.update", message) }
 
 
     fun setLogger(value: (String) -> Unit): UpdateManager {

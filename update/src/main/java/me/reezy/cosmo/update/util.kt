@@ -17,8 +17,10 @@ import kotlin.system.exitProcess
 internal fun install(context: Context, file: File, exit: Boolean) {
     val intent = Intent(Intent.ACTION_VIEW)
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        UpdateManager.log("install bellow N install => $file")
         intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive")
     } else {
+        UpdateManager.log("install above N install => $file")
         val uri: Uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
         intent.setDataAndType(uri, "application/vnd.android.package-archive")
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
